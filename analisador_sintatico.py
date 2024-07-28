@@ -137,6 +137,14 @@ class Parser:
         self.eat("LBRACE")
         self.bloco()
         self.eat("RBRACE")
+        # Espera o token fim_while
+        if not self.current_token:
+            raise SyntaxError("Expected 'fim_while', but reached end of file")
+        
+        if self.current_token[0] != "IDENTIFIER" or self.current_token[1] != "fim_while":
+            raise SyntaxError(f"Expected 'fim_while', got {self.current_token}")
+        
+        self.eat("IDENTIFIER")  # Consome o "fim_while"
 
     def declaracao_retorno(self):
         self.eat("RETURN")
