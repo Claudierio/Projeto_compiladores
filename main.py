@@ -19,13 +19,16 @@ def main():
         with open(test_file, 'r') as file:
             code = file.read()
         
-        print(f"Testing {test_file}...")
+        print(f"\nTesting {test_file}...")
         lexer = Lexer(code)
+        tokens = lexer.get_tokens()
+        print(f"Tokens: {tokens}")
+        
         parser = Parser(lexer)
         
         try:
             parser.programa()
-            print("Parsing completed successfully!")
+            print(f"Parsing of {test_file} completed successfully!")
         except SyntaxError as e:
             print(f"Syntax error in {test_file}: {e}")
         except Exception as e:

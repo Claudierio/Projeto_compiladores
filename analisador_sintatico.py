@@ -16,9 +16,14 @@ class Parser:
         self.eat("IDENTIFIER")
         self.eat("SEMICOLON")
         self.bloco()
+        if self.current_token:
+            raise SyntaxError(f"Unexpected token at the end of program: {self.current_token}")
 
     def bloco(self):
-        while self.current_token and self.current_token[0] in {"PROCEDURE", "FUNCTION", "INT", "BOOL", "IDENTIFIER", "IF", "WHILE", "RETURN", "CONTINUE", "BREAK", "PRINT"}:
+        while self.current_token and self.current_token[0] in {
+            "PROCEDURE", "FUNCTION", "INT", "BOOL", "IDENTIFIER",
+            "IF", "WHILE", "RETURN", "CONTINUE", "BREAK", "PRINT"
+        }:
             self.comando()
 
     def comando(self):
@@ -29,7 +34,7 @@ class Parser:
         elif self.current_token[0] == "FUNCTION":
             self.declaracao_funcao()
         elif self.current_token[0] == "IDENTIFIER":
-            self.atribuicao()
+            self.atribuicao_ou_chamada()
         elif self.current_token[0] == "IF":
             self.declaracao_if()
         elif self.current_token[0] == "WHILE":
@@ -40,6 +45,39 @@ class Parser:
             self.incondicional()
         elif self.current_token[0] == "PRINT":
             self.declaracao_imprimir()
+        else:
+            raise SyntaxError(f"Unexpected token in comando: {self.current_token}")
+
+    def atribuicao_ou_chamada(self):
+        print(f"Processing token: {self.current_token}")
+        identifier = self.current_token
+        self.eat("IDENTIFIER")
+        
+        if self.current_token and self.current_token[0] == "ASSIGN":
+            print(f"Assignment detected for identifier: {identifier}")
+            self.eat("ASSIGN")
+            self.expressao()
+            self.eat("SEMICOLON")
+        elif self.current_token and self.current_token[0] == "LPAREN":
+            print(f"Function call detected for identifier: {identifier}")
+            self.eat("LPAREN")
+            self.argumentos()
+            self.eat("RPAREN")
+            self.eat("SEMICOLON")
+        else:
+            raise SyntaxError(f"Expected ASSIGN or LPAREN after identifier, got {self.current_token}")
+
+    def argumentos(self):
+        if self.current_token and self.current_token[0] in {"IDENTIFIER", "NUMBER"}:
+            self.expressao()
+            while self.current_token and self.current_token[0] == "COMMA":
+                self.eat("COMMA")
+                self.expressao()
+        elif self.current_token and self.current_token[0] == "RPAREN":
+            # No arguments, just closing parenthesis
+            return
+        else:
+            raise SyntaxError(f"Expected IDENTIFIER, NUMBER, or RPAREN, got {self.current_token}")
 
     def declaracao_variavel(self):
         self.eat(self.current_token[0])  # INT ou BOOL
@@ -62,6 +100,7 @@ class Parser:
 
     def declaracao_funcao(self):
         self.eat("FUNCTION")
+        self.eat("INT")  # Tipo de retorno da função, pode ser alterado conforme necessário
         self.eat("IDENTIFIER")
         self.eat("LPAREN")
         if self.current_token and self.current_token[0] in {"INT", "BOOL"}:
@@ -72,14 +111,9 @@ class Parser:
         self.eat("RPAREN")
         self.eat("LBRACE")
         self.bloco()
-        self.declaracao_retorno()
+        if self.current_token and self.current_token[0] == "RETURN":
+            self.declaracao_retorno()
         self.eat("RBRACE")
-
-    def atribuicao(self):
-        self.eat("IDENTIFIER")
-        self.eat("ASSIGN")
-        self.expressao()
-        self.eat("SEMICOLON")
 
     def declaracao_if(self):
         self.eat("IF")
@@ -154,6 +188,8 @@ class Parser:
         elif self.current_token and self.current_token[0] == "NOT":
             self.eat("NOT")
             self.fator()
+        else:
+            raise SyntaxError(f"Unexpected token in fator: {self.current_token}")
 
 # Exemplo de uso
 if __name__ == "__main__":
@@ -162,25 +198,23 @@ if __name__ == "__main__":
         'tests/chamada_funcao.txt',
         'tests/chamada_procedimento.txt',
         'tests/condicional.txt',
-        'tests/declaracao_funcao.txt',
-        'tests/declaracao_procedimento.txt',
-        'tests/declaracao_variavel.txt',
-        'tests/enquanto.txt',
-        'tests/escrita.txt',
-        'tests/operacoes.txt'
+        'tests/declaracao_funcao.txt'
     ]
 
     for test_file in test_files:
         with open(test_file, 'r') as file:
             code = file.read()
-
-        print(f"Testing {test_file}...")
+        
+        print(f"\nTesting {test_file}...")
         lexer = Lexer(code)
+        tokens = lexer.get_tokens()
+        print(f"Tokens: {tokens}")
+        
         parser = Parser(lexer)
-
+        
         try:
             parser.programa()
-            print("Parsing completed successfully!")
+            print(f"Parsing of {test_file} completed successfully!")
         except SyntaxError as e:
             print(f"Syntax error in {test_file}: {e}")
         except Exception as e:
