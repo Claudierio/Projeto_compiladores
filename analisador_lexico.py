@@ -35,7 +35,7 @@ tokens = [
     ("MULT", r'\*'),
     ("DIV", r'/'),
     ("MOD", r'%'),
-    ("STRING", r'"[^"]*"'),  # Adicionando suporte a strings
+    ("STRING", r'"[^"]*"'),  
     ("IDENTIFIER", r'[a-zA-Z_][a-zA-Z0-9_]*'),
     ("NUMBER", r'\d+'),
     ("WHITESPACE", r'\s+'),

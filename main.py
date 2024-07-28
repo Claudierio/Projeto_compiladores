@@ -1,6 +1,12 @@
 from analisador_lexico import Lexer
 from analisador_sintatico import Parser
 
+# Códigos ANSI para cores
+class Colors:
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    RESET = '\033[0m'
+
 def main():
     test_files = [
         'tests/atribuicao.txt',
@@ -28,11 +34,11 @@ def main():
         
         try:
             parser.programa()
-            print(f"Parsing of {test_file} completed successfully!")
+            print(f"{Colors.GREEN}Parsing of {test_file} completed successfully!{Colors.RESET}")
         except SyntaxError as e:
-            print(f"Syntax error in {test_file}: {e}")
+            print(f"{Colors.RED}Syntax error in {test_file}: {e}{Colors.RESET}")
         except Exception as e:
-            print(f"An error occurred in {test_file}: {e}")
+            print(f"{Colors.RED}An error occurred in {test_file}: {e}{Colors.RESET}")
 
 if __name__ == "__main__":
     main()

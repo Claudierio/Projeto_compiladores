@@ -1,5 +1,6 @@
 programa exemplo;
-procedimento mostrarMensagem() {
-    imprimir("Olá, mundo!");
+procedimento minha_funcao(int x, bool flag) {
+    imprimir("Exemplo de chamada de procedimento");
+    x = 10;
+    minha_funcao(x, True);
 }
-chamada_procedimento mostrarMensagem();

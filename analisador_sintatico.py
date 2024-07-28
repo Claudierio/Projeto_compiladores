@@ -148,11 +148,14 @@ class Parser:
         self.eat("SEMICOLON")
 
     def declaracao_imprimir(self):
-        self.eat("PRINT")
-        self.eat("LPAREN")
-        self.expressao()
-        self.eat("RPAREN")
-        self.eat("SEMICOLON")
+            self.eat("PRINT")
+            self.eat("LPAREN")
+            if self.current_token[0] == "STRING":
+                self.eat("STRING")
+            else:
+                self.expressao()
+            self.eat("RPAREN")
+            self.eat("SEMICOLON")
 
     def parametro(self):
         self.eat(self.current_token[0])  # INT ou BOOL
