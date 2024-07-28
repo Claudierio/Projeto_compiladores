@@ -14,8 +14,11 @@ tokens = [
     ("COMMA", r','),
     ("ASSIGN", r'='),
     ("IF", r'if'),
+    ("FIM_IF", r'fim_if'),
     ("ELSE", r'else'),
+    ("FIM_ELSE", r'fim_else'),
     ("WHILE", r'while'),
+    ("FIM_WHILE", r'fim_while'),
     ("RETURN", r'retorno'),
     ("CONTINUE", r'continua'),
     ("BREAK", r'interrompe'),
@@ -96,6 +99,6 @@ if __name__ == "__main__":
             code = file.read()
             lexer = Lexer(code)
             
-            print(f"Tokens para {test_file}:")
+            print(f"\nTokens para {test_file}:")
             for token in lexer.get_tokens():
                 print(token)

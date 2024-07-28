@@ -123,7 +123,7 @@ class Parser:
         self.eat("LBRACE")
         self.bloco()  
         self.eat("RBRACE")
-        self.eat("IDENTIFIER") 
+        self.eat("FIM_IF") 
         
         # Processa a parte else opcional
         self.declaracao_else()
@@ -134,9 +134,9 @@ class Parser:
             self.eat("LBRACE")
             self.bloco()  
             self.eat("RBRACE")
-            self.eat("IDENTIFIER")  # Consome o "fim_else"
-        elif self.current_token and self.current_token[0] == "IDENTIFIER" and self.current_token[1] == "fim_else":
-            self.eat("IDENTIFIER")  
+            self.eat("FIM_ELSE")  # Consome o "fim_else"
+        elif self.current_token and self.current_token[0] == "FIM_ELSE" and self.current_token[1] == "fim_else":
+            self.eat("FIM_ELSE")  
 
 
     def declaracao_while(self):
@@ -151,10 +151,10 @@ class Parser:
         if not self.current_token:
             raise SyntaxError("Expected 'fim_while', but reached end of file")
         
-        if self.current_token[0] != "IDENTIFIER" or self.current_token[1] != "fim_while":
+        if self.current_token[0] != "FIM_WHILE" or self.current_token[1] != "fim_while":
             raise SyntaxError(f"Expected 'fim_while', got {self.current_token}")
         
-        self.eat("IDENTIFIER")  # Consome o "fim_while"
+        self.eat("FIM_WHILE")  # Consome o "fim_while"
 
     def declaracao_retorno(self):
         self.eat("RETURN")
