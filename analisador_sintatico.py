@@ -118,16 +118,27 @@ class Parser:
     def declaracao_if(self):
         self.eat("IF")
         self.eat("LPAREN")
-        self.expressao()
+        self.expressao()  # Expressão booleana
         self.eat("RPAREN")
         self.eat("LBRACE")
-        self.bloco()
+        self.bloco()  # Bloco de comandos dentro do if
         self.eat("RBRACE")
+        self.eat("IDENTIFIER")  # Consome o "fim_if"
+        
+        # Processa a parte else opcional
+        self.declaracao_else()
+
+    def declaracao_else(self):
         if self.current_token and self.current_token[0] == "ELSE":
             self.eat("ELSE")
             self.eat("LBRACE")
-            self.bloco()
+            self.bloco()  # Bloco de comandos dentro do else
             self.eat("RBRACE")
+            self.eat("IDENTIFIER")  # Consome o "fim_else"
+        elif self.current_token and self.current_token[0] == "IDENTIFIER" and self.current_token[1] == "fim_else":
+            self.eat("IDENTIFIER")  # Consome o "fim_else"
+        # Se não há "else", simplesmente não faz nada (caso vazio)
+
 
     def declaracao_while(self):
         self.eat("WHILE")
