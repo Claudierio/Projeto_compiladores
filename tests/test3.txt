@@ -1,7 +1,0 @@
-programa exemplo3;
-bool flag;
-flag = True;
-if (flag) {
-    int z;
-    z = 10;
-}

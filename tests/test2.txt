@@ -1,3 +1,0 @@
-programa exemplo2;
-int y;
-y = 5 + 2 * (3 - 1);

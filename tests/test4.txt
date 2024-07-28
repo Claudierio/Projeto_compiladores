@@ -1,9 +1,0 @@
-programa exemplo4;
-int a;
-bool b;
-a = 5;
-b = False;
-while (a > 0) {
-    a = a - 1;
-    imprimir(a);
-}

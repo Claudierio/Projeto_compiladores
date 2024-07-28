@@ -1,9 +1,0 @@
-programa exemplo5;
-int num;
-num = 10;
-funcao int soma(int x, int y) {
-    retorno x + y;
-}
-int resultado;
-resultado = soma(3, 4);
-imprimir(resultado);
