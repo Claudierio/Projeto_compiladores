@@ -1,0 +1,4 @@
+programa exemplo;
+int x;
+bool y;
+y = True;

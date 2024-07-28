@@ -1,0 +1,3 @@
+programa exemplo;
+int x;
+x = 10;

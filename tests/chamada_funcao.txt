@@ -1,0 +1,6 @@
+programa exemplo;
+funcao int soma(int a, int b) {
+    retorno a + b;
+}
+int resultado;
+resultado = soma(5, 3);

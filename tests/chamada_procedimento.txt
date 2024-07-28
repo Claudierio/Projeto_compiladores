@@ -1,0 +1,5 @@
+programa exemplo;
+procedimento mostrarMensagem() {
+    imprimir("Olá, mundo!");
+}
+chamada_procedimento mostrarMensagem();

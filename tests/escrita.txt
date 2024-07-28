@@ -1,0 +1,4 @@
+programa exemplo;
+int x;
+x = 10;
+imprimir(x);

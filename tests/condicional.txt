@@ -1,0 +1,9 @@
+programa exemplo;
+int x;
+x = 10;
+if (x > 5) {
+    imprimir(x);
+} fim_if
+else {
+    imprimir(0);
+} fim_else
