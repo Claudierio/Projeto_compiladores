@@ -1,16 +1,18 @@
 from analisador_lexico import Lexer
 
 class Parser:
+    #Inicializa o parser com o lexer e define o token atual.
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = self.lexer.next_token()
 
+    #Consome o token atual se ele corresponder ao tipo esperado, avançando para o próximo token.
     def eat(self, token_type):
         if self.current_token and self.current_token[0] == token_type:
             self.current_token = self.lexer.next_token()
         else:
             raise SyntaxError(f"Expected {token_type}, got {self.current_token}")
-
+    #Verifica a estrutura geral do programa, começando com a palavra-chave programa e terminando com um bloco de código.
     def programa(self):
         self.eat("PROGRAM")
         self.eat("IDENTIFIER")
@@ -18,14 +20,14 @@ class Parser:
         self.bloco()
         if self.current_token:
             raise SyntaxError(f"Unexpected token at the end of program: {self.current_token}")
-
+    #Processa o bloco de código, que pode conter comandos variados.
     def bloco(self):
         while self.current_token and self.current_token[0] in {
             "PROCEDURE", "FUNCTION", "INT", "BOOL", "IDENTIFIER",
             "IF", "WHILE", "RETURN", "CONTINUE", "BREAK", "PRINT"
         }:
             self.comando()
-
+    #Decide o tipo de comando com base no token atual e chama o método apropriado (declarações, atribuições, chamadas, etc.).
     def comando(self):
         if self.current_token[0] in {"INT", "BOOL"}:
             self.declaracao_variavel()
@@ -47,7 +49,8 @@ class Parser:
             self.declaracao_imprimir()
         else:
             raise SyntaxError(f"Unexpected token in comando: {self.current_token}")
-
+        
+    #Trata atribuições e chamadas de funções/procedimentos.
     def atribuicao_ou_chamada(self):
         print(f"Processing token: {self.current_token}")
         identifier = self.current_token
@@ -78,7 +81,8 @@ class Parser:
             return
         else:
             raise SyntaxError(f"Expected IDENTIFIER, NUMBER, or RPAREN, got {self.current_token}")
-
+        
+    #Processa declarações específicas e seus componentes.
     def declaracao_variavel(self):
         self.eat(self.current_token[0])  # INT ou BOOL
         self.eat("IDENTIFIER")
@@ -100,7 +104,7 @@ class Parser:
 
     def declaracao_funcao(self):
         self.eat("FUNCTION")
-        self.eat("INT")  # Tipo de retorno da função, pode ser alterado conforme necessário
+        self.eat("INT")  
         self.eat("IDENTIFIER")
         self.eat("LPAREN")
         if self.current_token and self.current_token[0] in {"INT", "BOOL"}:
@@ -179,12 +183,14 @@ class Parser:
         self.eat(self.current_token[0])  # INT ou BOOL
         self.eat("IDENTIFIER")
 
+    #Avalia expressões aritméticas e booleanas.
     def expressao(self):
         self.expressao_simples()
         if self.current_token and self.current_token[0] in {"EQ", "NEQ", "GT", "LT", "GTE", "LTE"}:
             self.eat(self.current_token[0])
             self.expressao_simples()
 
+    #Componentes da análise de expressões, lidando com operações e agrupamentos.
     def expressao_simples(self):
         if self.current_token and self.current_token[0] in {"PLUS", "MINUS"}:
             self.eat(self.current_token[0])
