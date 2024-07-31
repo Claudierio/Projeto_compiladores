@@ -45,11 +45,13 @@ tokens = [
 ]
 
 class Lexer:
+    #Inicializa o lexer com o código fonte e começa a tokenização.
     def __init__(self, code):
         self.code = code
         self.position = 0
         self.tokens = self.tokenize(code)
     
+    #Processa o código fonte, reconhecendo tokens baseados nos padrões regex definidos.
     def tokenize(self, code):
         token_list = []
         while self.position < len(code):
@@ -69,13 +71,13 @@ class Lexer:
             else:
                 self.position = match.end(0)
         return token_list
-
+    #Retorna o próximo token da lista.
     def next_token(self):
         if self.tokens:
             return self.tokens.pop(0)
         else:
             return None
-
+    # Retorna a lista completa de tokens.
     def get_tokens(self):
         return self.tokens
 
