@@ -1,0 +1,63 @@
+programa exemplo;
+int x;
+x = 10;
+
+funcao int soma(int a, int b) {
+    retorno a + b;
+}
+int resultado;
+soma(5, 3);
+resultado = soma;
+
+procedimento minha_funcao(int x, bool flag) {
+    imprimir("Exemplo de chamada de procedimento");
+    x = 10;
+    minha_funcao(x, True);
+}
+
+
+int x;
+x = 10;
+if (x > 5) {
+    imprimir(x);
+} fim_if
+else {
+    imprimir(0);
+} fim_else
+
+
+funcao int soma(int a, int b) {
+    retorno a + b;
+}
+
+
+procedimento mostrarMensagem() {
+    imprimir("Olá, mundo!");
+}
+
+
+
+int x;
+bool y;
+y = True + 1 * 4;
+
+
+int x;
+x = 0;
+while (x < 10) {
+    imprimir(x);
+    x = x + 1;
+} fim_while
+
+
+int x;
+x = 10;
+imprimir(x);
+
+
+int x;
+int y;
+x = 10 + 5;
+y = x * 2;
+imprimir(y);
+

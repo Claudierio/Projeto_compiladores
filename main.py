@@ -9,16 +9,7 @@ class Colors:
 
 def main():
     test_files = [
-        'tests/atribuicao.txt',
-        'tests/chamada_funcao.txt',
-        'tests/chamada_procedimento.txt',
-        'tests/condicional.txt',
-        'tests/declaracao_funcao.txt',
-        'tests/declaracao_procedimento.txt',
-        'tests/declaracao_variavel.txt',
-        'tests/enquanto.txt',
-        'tests/escrita.txt',
-        'tests/operacoes.txt'
+        'tests/Todos.txt'
     ]
 
     for test_file in test_files:
