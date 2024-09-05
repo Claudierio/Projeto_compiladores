@@ -19,13 +19,17 @@ def main():
         print(f"\nTesting {test_file}...")
         lexer = Lexer(code)
         tokens = lexer.get_tokens()
-        print(f"Tokens: {tokens}")
+        #print(f"Tokens: {tokens}")
         
         parser = Parser(lexer)
         
         try:
             parser.programa()
             print(f"{Colors.GREEN}Parsing of {test_file} completed successfully!{Colors.RESET}")
+            
+            # Imprime a tabela de símbolos após a análise
+            parser.symbol_table.print_table()  # Corrigido para usar o método correto print_table()
+            
         except SyntaxError as e:
             print(f"{Colors.RED}Syntax error in {test_file}: {e}{Colors.RESET}")
         except Exception as e:

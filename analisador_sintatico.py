@@ -1,10 +1,12 @@
 from analisador_lexico import Lexer
-
+from symbol_table import SymbolTable
 class Parser: 
     #Inicializa o parser com o lexer e define o token atual.
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = self.lexer.next_token()
+        self.symbol_table = SymbolTable()  # Adicione a tabela de símbolos aqui
+
 
     #Consome o token atual se ele corresponder ao tipo esperado, avançando para o próximo token.
     def eat(self, token_type):
@@ -86,40 +88,87 @@ class Parser:
         
     #Processa declarações específicas e seus componentes.
     def declaracao_variavel(self):
-        self.eat(self.current_token[0])  # INT ou BOOL
+        var_type = self.current_token[0]  # INT ou BOOL
+        self.eat(self.current_token[0])
+        
+        var_name = self.current_token[1]  # IDENTIFIER
+        line = self.current_token[2]      # Linha do token
+        column = self.current_token[3]    # Coluna do token
+        
         self.eat("IDENTIFIER")
         self.eat("SEMICOLON")
-
-    def declaracao_procedimento(self):
-        self.eat("PROCEDURE")
-        self.eat("IDENTIFIER")
-        self.eat("LPAREN")
-        if self.current_token and self.current_token[0] in {"INT", "BOOL"}:
-            self.parametro()
-            while self.current_token and self.current_token[0] == "COMMA":
-                self.eat("COMMA")
-                self.parametro()
-        self.eat("RPAREN")
-        self.eat("LBRACE")
-        self.bloco()
-        self.eat("RBRACE")
+        
+        # Adicionar o símbolo à tabela de símbolos com a linha e coluna corretas
+        self.symbol_table.add_symbol(var_name, 'variable', var_type, line, column)
 
     def declaracao_funcao(self):
         self.eat("FUNCTION")
-        self.eat("INT")  
+        return_type = self.current_token[0]  # INT ou BOOL
+        self.eat("INT")
+        
+        func_name = self.current_token[1]  # IDENTIFIER
+        line = self.current_token[2]
+        column = self.current_token[3]
+        
         self.eat("IDENTIFIER")
+        
+        if self.symbol_table.find_symbol(func_name):
+            print(f"Function '{func_name}' already declared. Redefining it.")
+        
+        # Adicionar a função na tabela de símbolos
+        self.symbol_table.add_symbol(func_name, 'function', return_type, line, column)
+        
         self.eat("LPAREN")
+        
+        # Processar parâmetros da função, se existirem
         if self.current_token and self.current_token[0] in {"INT", "BOOL"}:
-            self.parametro()
-            while self.current_token and self.current_token[0] == "COMMA":
+            self.parametro()  # Consome o primeiro parâmetro
+            while self.current_token and self.current_token[0] == "COMMA":  # Se houver mais de um parâmetro
                 self.eat("COMMA")
-                self.parametro()
+                self.parametro()  # Consome o próximo parâmetro
+        
+        # Consome o parêntese direito ")"
+        self.eat("RPAREN")
+        
+        # Consome a chave de abertura "{"
+        self.eat("LBRACE")
+        
+        # Analisa o bloco de comandos dentro da função
+        self.bloco()
+        
+        # Consome a chave de fechamento "}"
+        self.eat("RBRACE")
+
+    def declaracao_procedimento(self):
+        self.eat("PROCEDURE")
+        proc_name = self.current_token[1]  # IDENTIFIER
+        line = self.current_token[2]
+        column = self.current_token[3]
+        
+        self.eat("IDENTIFIER")
+        
+        if self.symbol_table.find_symbol(proc_name):
+            print(f"Procedure '{proc_name}' already declared. Redefining it.")
+        
+        # Adicionar o procedimento na tabela de símbolos
+        self.symbol_table.add_symbol(proc_name, 'procedure', None, line, column)
+        
+        self.eat("LPAREN")
+        
+        # Processar parâmetros do procedimento, se existirem
+        if self.current_token and self.current_token[0] in {"INT", "BOOL"}:
+            self.parametro()  # Consome o primeiro parâmetro
+            while self.current_token and self.current_token[0] == "COMMA":  # Se houver mais de um parâmetro
+                self.eat("COMMA")
+                self.parametro()  # Consome o próximo parâmetro
+        
+        # Consome o parêntese direito ")"
         self.eat("RPAREN")
         self.eat("LBRACE")
         self.bloco()
-        if self.current_token and self.current_token[0] == "RETURN":
-            self.declaracao_retorno()
         self.eat("RBRACE")
+
+
 
     def declaracao_if(self):
         self.eat("IF")
@@ -237,7 +286,7 @@ if __name__ == "__main__":
         print(f"\nTesting {test_file}...")
         lexer = Lexer(code)
         tokens = lexer.get_tokens()
-        print(f"Tokens: {tokens}")
+        #print(f"Tokens: {tokens}")
         
         parser = Parser(lexer)
         
