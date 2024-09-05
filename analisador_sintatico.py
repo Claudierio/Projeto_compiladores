@@ -1,6 +1,6 @@
 from analisador_lexico import Lexer
 
-class Parser:
+class Parser: 
     #Inicializa o parser com o lexer e define o token atual.
     def __init__(self, lexer):
         self.lexer = lexer
@@ -11,7 +11,9 @@ class Parser:
         if self.current_token and self.current_token[0] == token_type:
             self.current_token = self.lexer.next_token()
         else:
-            raise SyntaxError(f"Expected {token_type}, got {self.current_token}")
+            line = self.current_token[2] if self.current_token else "EOF"
+            column = self.current_token[3] if self.current_token else "EOF"
+            raise SyntaxError(f"Expected {token_type}, got {self.current_token} at line {line}, column {column}")
     #Verifica a estrutura geral do programa, começando com a palavra-chave programa e terminando com um bloco de código.
     def programa(self):
         self.eat("PROGRAM")

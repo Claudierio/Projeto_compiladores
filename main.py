@@ -7,7 +7,7 @@ class Colors:
     RED = '\033[91m'
     RESET = '\033[0m'
 
-def main():
+def main(): 
     test_files = [
         'tests/Todos.txt'
     ]

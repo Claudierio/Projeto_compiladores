@@ -45,13 +45,13 @@ tokens = [
 ]
 
 class Lexer:
-    #Inicializa o lexer com o código fonte e começa a tokenização.
     def __init__(self, code):
         self.code = code
         self.position = 0
+        self.line = 1
+        self.column = 1
         self.tokens = self.tokenize(code)
     
-    #Processa o código fonte, reconhecendo tokens baseados nos padrões regex definidos.
     def tokenize(self, code):
         token_list = []
         while self.position < len(code):
@@ -63,25 +63,33 @@ class Lexer:
                 if match:
                     text = match.group(0)
                     if pattern != "WHITESPACE":  # Ignora espaços em branco
-                        token_list.append((pattern, text))
+                        token_list.append((pattern, text, self.line, self.column))
+                    self.update_position(text)
                     break
             if not match:
                 print(f"Erro no caractere: {code[self.position]} na posição {self.position}")
-                raise SyntaxError(f"Illegal character: {code[self.position]} at position {self.position}")
+                raise SyntaxError(f"Illegal character: {code[self.position]} at line {self.line}, column {self.column}")
             else:
                 self.position = match.end(0)
         return token_list
-    #Retorna o próximo token da lista.
+
+    def update_position(self, text):
+        lines = text.split('\n')
+        if len(lines) > 1:
+            self.line += len(lines) - 1
+            self.column = len(lines[-1]) + 1
+        else:
+            self.column += len(text)
+
     def next_token(self):
         if self.tokens:
             return self.tokens.pop(0)
         else:
             return None
-    # Retorna a lista completa de tokens.
+
     def get_tokens(self):
         return self.tokens
 
-# Exemplo de uso
 if __name__ == "__main__":
     test_files = [
         'tests/atribuicao.txt',
