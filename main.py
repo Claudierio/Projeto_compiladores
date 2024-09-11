@@ -25,10 +25,10 @@ def main():
         
         try:
             parser.programa()
-            print(f"{Colors.GREEN}Parsing of {test_file} completed successfully!{Colors.RESET}")
+            print(f"\n{Colors.GREEN}Parsing of {test_file} completed successfully!{Colors.RESET}\n")
             
             # Imprime a tabela de símbolos após a análise
-            parser.symbol_table.print_table()  # Corrigido para usar o método correto print_table()
+            #parser.symbol_table.print_table()  # Corrigido para usar o método correto print_table()
             
         except SyntaxError as e:
             print(f"{Colors.RED}Syntax error in {test_file}: {e}{Colors.RESET}")
