@@ -1,5 +1,5 @@
 from analisador_lexico import Lexer
-from symbol_table import SymbolTable
+from tabela_simbolos import SymbolTable
 class Parser: 
     #Inicializa o parser com o lexer e define o token atual.
     def __init__(self, lexer):
@@ -24,13 +24,16 @@ class Parser:
         self.bloco()
         if self.current_token:
             raise SyntaxError(f"Unexpected token at the end of program: {self.current_token}")
+        self.symbol_table.print_table()  # Print the symbol table at the end
     #Processa o bloco de código, que pode conter comandos variados.
     def bloco(self):
+        self.symbol_table.enter_scope()  # Entra no escopo do bloco
         while self.current_token and self.current_token[0] in {
             "PROCEDURE", "FUNCTION", "INT", "BOOL", "IDENTIFIER",
             "IF", "WHILE", "RETURN", "CONTINUE", "BREAK", "PRINT"
         }:
             self.comando()
+        self.symbol_table.exit_scope()  # Sai do escopo do bloco
     #Decide o tipo de comando com base no token atual e chama o método apropriado (declarações, atribuições, chamadas, etc.).
     def comando(self):
         if self.current_token[0] in {"INT", "BOOL"}:
@@ -231,8 +234,14 @@ class Parser:
             self.eat("SEMICOLON")
 
     def parametro(self):
-        self.eat(self.current_token[0])  # INT ou BOOL
+        #self.eat(self.current_token[0])  # INT ou BOOL
+        var_type = self.current_token[0]
+        self.eat(var_type)
+        var_name = self.current_token[1]
+        line = self.current_token[2]
+        column = self.current_token[3]
         self.eat("IDENTIFIER")
+        self.symbol_table.add_symbol(var_name, 'parameter', var_type, line, column)
 
     #Avalia expressões aritméticas e booleanas.
     def expressao(self):
