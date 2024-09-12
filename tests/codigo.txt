@@ -35,11 +35,11 @@ procedimento mostrarMensagem() {
     imprimir("Olá, mundo!");
 }
 
-
+mostrarMensagem();
 
 int x;
 bool y;
-y = True + 1 * 4;
+y = True;
 
 
 int x;
