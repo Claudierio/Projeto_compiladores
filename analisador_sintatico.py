@@ -1,11 +1,16 @@
 from analisador_lexico import Lexer
 from tabela_simbolos import SymbolTable
+from analisador_semantico import SemanticAnalyzer
+from codigo_tres_enderecos import ThreeAddressCodeGenerator
+
 class Parser: 
     #Inicializa o parser com o lexer e define o token atual.
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = self.lexer.next_token()
         self.symbol_table = SymbolTable()  # Adicione a tabela de símbolos aqui
+        self.semantic_analyzer = SemanticAnalyzer(self.symbol_table)  # Adicione o analisador semântico aqui
+        self.code_generator = ThreeAddressCodeGenerator()  # Adicione o gerador de código de três endereços aqui
 
 
     #Consome o token atual se ele corresponder ao tipo esperado, avançando para o próximo token.
@@ -25,6 +30,10 @@ class Parser:
         if self.current_token:
             raise SyntaxError(f"Unexpected token at the end of program: {self.current_token}")
         self.symbol_table.print_table()  # Print the symbol table at the end
+        # Relata erros semânticos, se houver
+        self.semantic_analyzer.report_errors()
+        # Imprime o código de três endereços gerado
+        self.code_generator.print_code()
     #Processa o bloco de código, que pode conter comandos variados.
     def bloco(self):
         self.symbol_table.enter_scope()  # Entra no escopo do bloco
