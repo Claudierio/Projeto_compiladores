@@ -9,7 +9,7 @@ class Colors:
 
 def main(): 
     test_files = [
-        'tests/Todos.txt'
+        'tests/codigo.txt'
     ]
 
     for test_file in test_files:

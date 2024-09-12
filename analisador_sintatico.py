@@ -68,14 +68,37 @@ class Parser:
         
     #Trata atribuições e chamadas de funções/procedimentos.
     def atribuicao_ou_chamada(self):
-        print(f"Processing token: {self.current_token}")
-        identifier = self.current_token
+        identifier = self.current_token[1]  # Pegando o nome do identificador (ex: "c")
+        print(f"Processing assignment or function call for: {identifier}")
+        line = self.current_token[2]       # Linha do identificador
+        column = self.current_token[3]     # Coluna do identificador
         self.eat("IDENTIFIER")
         
-        if self.current_token and self.current_token[0] == "ASSIGN":
-            print(f"Assignment detected for identifier: {identifier}")
+        if self.current_token[0] == "ASSIGN":
             self.eat("ASSIGN")
-            self.expressao()
+            print(f"Assignment detected for variable: {identifier}")
+            
+            # Recuperar o símbolo da variável da tabela de símbolos
+            symbol = self.symbol_table.find_symbol(identifier)
+            if not symbol:
+                self.semantic_analyzer.errors.append(
+                    f"Semantic error: Undeclared variable '{identifier}' at line {line}, column {column}"
+                )
+                return
+            
+            left_type = symbol['var_type']  # Tipo da variável (ex: "INT" para "c")
+            print(f"Left side type (variable '{identifier}'): {left_type}")
+            
+            # Obter o tipo da expressão à direita (ex: "10" -> tipo "INT")
+            right_type = self.expressao()  # Aqui esperamos receber "INT"
+            print(f"Right side type (expression): {right_type}")
+            
+            # Verificar a consistência de tipos
+            if left_type != right_type:
+                self.semantic_analyzer.errors.append(f"Semantic error: Type mismatch at line {line}, column {column}: variable '{identifier}' cannot be assigned to {right_type}")
+            else:
+                print(f"Correct attribution: '{identifier}' of type {left_type} receive {right_type}")
+
             self.eat("SEMICOLON")
         elif self.current_token and self.current_token[0] == "LPAREN":
             print(f"Function call detected for identifier: {identifier}")
@@ -101,7 +124,7 @@ class Parser:
     #Processa declarações específicas e seus componentes.
     def declaracao_variavel(self):
         var_type = self.current_token[0]  # INT ou BOOL
-        self.eat(self.current_token[0])
+        self.eat(var_type)
         
         var_name = self.current_token[1]  # IDENTIFIER
         line = self.current_token[2]      # Linha do token
@@ -112,6 +135,9 @@ class Parser:
         
         # Adicionar o símbolo à tabela de símbolos com a linha e coluna corretas
         self.symbol_table.add_symbol(var_name, 'variable', var_type, line, column)
+
+        # Print para debug: verificar se a variável foi adicionada corretamente
+        print(f"Variable declared: {var_name}, type: {var_type}, at line {line}, column {column}")
 
     def declaracao_funcao(self):
         self.eat("FUNCTION")
@@ -225,8 +251,17 @@ class Parser:
 
     def declaracao_retorno(self):
         self.eat("RETURN")
-        self.expressao()
+        expr_type = self.expressao()
+        
+        # Verifique se o tipo de retorno é compatível com o tipo da função
+        if expr_type != "INT":  # Supondo que a função soma seja do tipo INT
+            line, column = self.current_token[2], self.current_token[3]
+            self.semantic_analyzer.errors.append(
+                f"Semantic error: Type mismatch in return at line {line}, column {column}. Expected INT, got {expr_type}"
+            )
+    
         self.eat("SEMICOLON")
+
 
     def incondicional(self):
         self.eat(self.current_token[0])  # CONTINUE ou BREAK
@@ -251,41 +286,95 @@ class Parser:
         column = self.current_token[3]
         self.eat("IDENTIFIER")
         self.symbol_table.add_symbol(var_name, 'parameter', var_type, line, column)
+        print(f"Parameter added: {var_name}, type: {var_type}, line: {line}, column: {column}")
 
     #Avalia expressões aritméticas e booleanas.
     def expressao(self):
-        self.expressao_simples()
+        expr_type = self.expressao_simples()
         if self.current_token and self.current_token[0] in {"EQ", "NEQ", "GT", "LT", "GTE", "LTE"}:
-            self.eat(self.current_token[0])
-            self.expressao_simples()
+            operator = self.current_token[0]
+            self.eat(operator)
+            right_expr_type = self.expressao_simples()
+            
+            # Verificar se os tipos de ambos os lados da expressão são compatíveis
+            if expr_type != right_expr_type:
+                line, column = self.current_token[2], self.current_token[3]
+                self.semantic_analyzer.errors.append(f"Semantic error: Type mismatch in comparison at line {line}, column {column}")
+            
+            # return "BOOL"  # O resultado de comparações é sempre booleano
+        return expr_type
 
     #Componentes da análise de expressões, lidando com operações e agrupamentos.
     def expressao_simples(self):
         if self.current_token and self.current_token[0] in {"PLUS", "MINUS"}:
             self.eat(self.current_token[0])
-        self.termo()
+        
+        expr_type = self.termo()
+        
         while self.current_token and self.current_token[0] in {"PLUS", "MINUS"}:
-            self.eat(self.current_token[0])
-            self.termo()
+            operator = self.current_token[0]
+            self.eat(operator)
+            
+            right_expr_type = self.termo()
+            
+            if expr_type != "INT" or right_expr_type != "INT":
+                line, column = self.current_token[2], self.current_token[3]
+                self.semantic_analyzer.errors.append(
+                    f"Semantic error: Type mismatch in arithmetic operation at line {line}, column {column}"
+                )
+            else:
+                print(f"Valid arithmetic operation: {expr_type} {operator} {right_expr_type}")
+        
+        return expr_type
+
 
     def termo(self):
-        self.fator()
+        left_type = self.fator()
         while self.current_token and self.current_token[0] in {"MULT", "DIV", "MOD"}:
-            self.eat(self.current_token[0])
-            self.fator()
+            operator = self.current_token[0]
+            self.eat(operator)
+            right_type = self.fator()
+
+            if left_type != "INT" or right_type != "INT":
+                line, column = self.current_token[2], self.current_token[3]
+                self.semantic_analyzer.errors.append(
+                    f"Semantic error: Type mismatch in operation at line {line}, column {column}. Expected INT, got {left_type} {operator} {right_type}"
+                )
+        return left_type
+
 
     def fator(self):
-        if self.current_token and self.current_token[0] in {"IDENTIFIER", "NUMBER", "TRUE", "FALSE"}:
+        if self.current_token[0] == "NUMBER":
+            self.eat("NUMBER")
+            return "INT"
+        elif self.current_token[0] in {"TRUE", "FALSE"}:
             self.eat(self.current_token[0])
-        elif self.current_token and self.current_token[0] == "LPAREN":
+            return "BOOL"
+        elif self.current_token[0] == "IDENTIFIER":
+            identifier = self.current_token[1]
+            symbol = self.symbol_table.find_symbol(identifier)
+            
+            if symbol:
+                self.eat("IDENTIFIER")
+                return symbol['var_type']  # Retorna o tipo do identificador (INT ou BOOL)
+            else:
+                line, column = self.current_token[2], self.current_token[3]
+                self.semantic_analyzer.errors.append(
+                    f"Semantic error: Undeclared variable '{identifier}' at line {line}, column {column}"
+                )
+                return None
+        elif self.current_token[0] == "LPAREN":
             self.eat("LPAREN")
-            self.expressao()
+            expr_type = self.expressao()
             self.eat("RPAREN")
-        elif self.current_token and self.current_token[0] == "NOT":
+            return expr_type
+        elif self.current_token[0] == "NOT":
             self.eat("NOT")
-            self.fator()
+            return self.fator()
         else:
             raise SyntaxError(f"Unexpected token in fator: {self.current_token}")
+
+
 
 # Exemplo de uso
 if __name__ == "__main__":

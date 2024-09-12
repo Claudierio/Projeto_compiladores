@@ -26,7 +26,7 @@ class SemanticAnalyzer:
     def report_errors(self):
         """Exibe todos os erros semânticos encontrados."""
         if not self.errors:
-            print("No semantic errors found.")
+            print("\nNo semantic errors found.")
         else:
             print("\nSemantic Errors:")
             for error in self.errors:
