@@ -1,5 +1,5 @@
 class ThreeAddressCodeGenerator:
-    def __init__(self):
+    def __init__(self):  
         self.code = []
         self.temp_count = 0
 
