@@ -1,7 +1,7 @@
 from tabela_simbolos import SymbolTable
 
 class SemanticAnalyzer:
-    def __init__(self, symbolTable):
+    def __init__(self, symbolTable): 
         self.symbolTable = symbolTable
         self.errors = []
 

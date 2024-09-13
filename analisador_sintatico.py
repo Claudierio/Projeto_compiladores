@@ -98,6 +98,8 @@ class Parser:
                 self.semantic_analyzer.errors.append(f"Semantic error: Type mismatch at line {line}, column {column}: variable '{identifier}' cannot be assigned to {right_type}")
             else:
                 print(f"Correct attribution: '{identifier}' of type {left_type} receive {right_type}")
+                self.code_generator.generate('ASSIGN', right_type, None, identifier)
+                print(f"Generated three-address code for assigning {right_type} to {identifier}")
 
             self.eat("SEMICOLON")
         elif self.current_token and self.current_token[0] == "LPAREN":
@@ -400,6 +402,14 @@ if __name__ == "__main__":
         try:
             parser.programa()
             print(f"Parsing of {test_file} completed successfully!")
+
+            # Adicione o trecho aqui:
+            if not parser.semantic_analyzer.errors:
+                print("\nThree-Address Code:")
+                parser.code_generator.print_code()
+            else:
+                print("Errors were found during semantic analysis. Three-Address Code not generated.")
+
         except SyntaxError as e:
             print(f"Syntax error in {test_file}: {e}")
         except Exception as e:
