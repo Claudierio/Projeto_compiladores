@@ -1,7 +1,8 @@
 class ThreeAddressCodeGenerator:
-    def __init__(self):  
+    def __init__(self):
         self.code = []
         self.temp_count = 0
+        self.label_count = 0
 
     def new_temp(self):
         """Gera um novo nome de variável temporária."""
@@ -20,3 +21,8 @@ class ThreeAddressCodeGenerator:
         print("\nThree-Address Code:")
         for line in self.code:
             print(" ".join(str(x) for x in line if x is not None))
+
+    def new_label(self):
+        self.label_count += 1
+        return f"L{self.label_count}"
+

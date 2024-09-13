@@ -8,10 +8,9 @@ class Parser:
     def __init__(self, lexer):
         self.lexer = lexer
         self.current_token = self.lexer.next_token()
-        self.symbol_table = SymbolTable()  # Adicione a tabela de símbolos aqui
-        self.semantic_analyzer = SemanticAnalyzer(self.symbol_table)  # Adicione o analisador semântico aqui
-        self.code_generator = ThreeAddressCodeGenerator()  # Adicione o gerador de código de três endereços aqui
-
+        self.symbol_table = SymbolTable()
+        self.semantic_analyzer = SemanticAnalyzer(self.symbol_table)
+        self.code_generator = ThreeAddressCodeGenerator()
 
     #Consome o token atual se ele corresponder ao tipo esperado, avançando para o próximo token.
     def eat(self, token_type):
@@ -21,6 +20,7 @@ class Parser:
             line = self.current_token[2] if self.current_token else "EOF"
             column = self.current_token[3] if self.current_token else "EOF"
             raise SyntaxError(f"Expected {token_type}, got {self.current_token} at line {line}, column {column}")
+        
     #Verifica a estrutura geral do programa, começando com a palavra-chave programa e terminando com um bloco de código.
     def programa(self):
         self.eat("PROGRAM")
@@ -35,6 +35,7 @@ class Parser:
         # Imprime o código de três endereços gerado
         self.code_generator.print_code()
     #Processa o bloco de código, que pode conter comandos variados.
+
     def bloco(self):
         self.symbol_table.enter_scope()  # Entra no escopo do bloco
         while self.current_token and self.current_token[0] in {
@@ -43,7 +44,8 @@ class Parser:
         }:
             self.comando()
         self.symbol_table.exit_scope()  # Sai do escopo do bloco
-    #Decide o tipo de comando com base no token atual e chama o método apropriado (declarações, atribuições, chamadas, etc.).
+    #Decide o tipo de comando com base no token atual e chama o método apropriado (declarações, atribuições, chamadas, etc.)
+
     def comando(self):
         if self.current_token[0] in {"INT", "BOOL"}:
             self.declaracao_variavel()
@@ -86,11 +88,11 @@ class Parser:
                 )
                 return
             
-            left_type = symbol['var_type']  # Tipo da variável (ex: "INT" para "c")
+            left_type = symbol['var_type']  # Tipo da variável
             print(f"Left side type (variable '{identifier}'): {left_type}")
             
-            # Obter o tipo da expressão à direita (ex: "10" -> tipo "INT")
-            right_type = self.expressao()  # Aqui esperamos receber "INT"
+            # Obter o tipo da expressão à direita
+            right_type = self.expressao()
             print(f"Right side type (expression): {right_type}")
             
             # Verificar a consistência de tipos
@@ -98,8 +100,6 @@ class Parser:
                 self.semantic_analyzer.errors.append(f"Semantic error: Type mismatch at line {line}, column {column}: variable '{identifier}' cannot be assigned to {right_type}")
             else:
                 print(f"Correct attribution: '{identifier}' of type {left_type} receive {right_type}")
-                self.code_generator.generate('ASSIGN', right_type, None, identifier)
-                print(f"Generated three-address code for assigning {right_type} to {identifier}")
 
             self.eat("SEMICOLON")
         elif self.current_token and self.current_token[0] == "LPAREN":
@@ -118,7 +118,7 @@ class Parser:
                 self.eat("COMMA")
                 self.expressao()
         elif self.current_token and self.current_token[0] == "RPAREN":
-            # No arguments, just closing parenthesis
+            # Sem argumentos, apenas fechando parênteses
             return
         else:
             raise SyntaxError(f"Expected IDENTIFIER, NUMBER, or RPAREN, got {self.current_token}")
@@ -138,6 +138,9 @@ class Parser:
         # Adicionar o símbolo à tabela de símbolos com a linha e coluna corretas
         self.symbol_table.add_symbol(var_name, 'variable', var_type, line, column)
 
+        #Código de três endereços
+        self.code_generator.generate(f"decl {var_name}: {var_type}")
+
         # Print para debug: verificar se a variável foi adicionada corretamente
         print(f"Variable declared: {var_name}, type: {var_type}, at line {line}, column {column}")
 
@@ -153,7 +156,7 @@ class Parser:
         self.eat("IDENTIFIER")
         
         if self.symbol_table.find_symbol(func_name):
-            print(f"Function '{func_name}' already declared. Redefining it.")
+             print(f"Function '{func_name}' already declared. Redefining it.")
         
         # Adicionar a função na tabela de símbolos
         self.symbol_table.add_symbol(func_name, 'function', return_type, line, column)
@@ -178,6 +181,7 @@ class Parser:
         
         # Consome a chave de fechamento "}"
         self.eat("RBRACE")
+        self.code_generator.generate(f"endfunc {func_name}")
 
     def declaracao_procedimento(self):
         self.eat("PROCEDURE")
@@ -207,39 +211,69 @@ class Parser:
         self.eat("LBRACE")
         self.bloco()
         self.eat("RBRACE")
-
-
+        self.code_generator.generate(f"endproc {proc_name}")
 
     def declaracao_if(self):
         self.eat("IF")
         self.eat("LPAREN")
-        self.expressao() 
+        condition_temp = self.expressao()
         self.eat("RPAREN")
         self.eat("LBRACE")
-        self.bloco()  
+        
+        label_false = self.code_generator.new_label()
+        label_end = self.code_generator.new_label()
+        
+        # Geração do código para o teste condicional
+        self.code_generator.generate(f"if {condition_temp} goto {label_false}")
+        self.code_generator.generate(f"goto {label_end}")
+        
+        # Bloco 'then'
+        self.code_generator.generate(f"{label_false}:")
+        self.bloco()
+
         self.eat("RBRACE")
-        self.eat("FIM_IF") 
+        self.eat("FIM_IF")
         
         # Processa a parte else opcional
         self.declaracao_else()
+
+        self.code_generator.generate(f"{label_end}:")
+
 
     def declaracao_else(self):
         if self.current_token and self.current_token[0] == "ELSE":
             self.eat("ELSE")
             self.eat("LBRACE")
+
+            label_false = self.code_generator.new_label()
+
+            label_end = self.code_generator.new_label()
+            self.code_generator.generate(f"goto {label_end}")
+            self.code_generator.generate(f"{label_false}:")
             self.bloco()  
             self.eat("RBRACE")
             self.eat("FIM_ELSE")  # Consome o "fim_else"
+            self.code_generator.generate(f"{label_end}:")
         elif self.current_token and self.current_token[0] == "FIM_ELSE" and self.current_token[1] == "fim_else":
-            self.eat("FIM_ELSE")  
+            self.eat("FIM_ELSE")
+            self.code_generator.generate(f"{label_false}:")
 
 
     def declaracao_while(self):
         self.eat("WHILE")
         self.eat("LPAREN")
-        self.expressao()
+        condition_temp = self.expressao()
         self.eat("RPAREN")
         self.eat("LBRACE")
+
+        # Gera o código para loop while
+        start_label = self.code_generator.new_label()
+        end_label = self.code_generator.new_label()
+        self.code_generator.generate(f"{start_label}:")
+        self.code_generator.generate(f"if {condition_temp} goto {end_label}")
+        self.code_generator.generate(f"goto {start_label}")
+
+        self.code_generator.generate(f"{end_label}:")
         self.bloco()
         self.eat("RBRACE")
         # Espera o token fim_while
@@ -263,21 +297,24 @@ class Parser:
             )
     
         self.eat("SEMICOLON")
+        self.code_generator.generate("return")
 
 
     def incondicional(self):
         self.eat(self.current_token[0])  # CONTINUE ou BREAK
         self.eat("SEMICOLON")
+        self.code_generator.generate(f"{self.current_token[0].lower()}")
 
     def declaracao_imprimir(self):
-            self.eat("PRINT")
-            self.eat("LPAREN")
-            if self.current_token[0] == "STRING":
-                self.eat("STRING")
-            else:
-                self.expressao()
-            self.eat("RPAREN")
-            self.eat("SEMICOLON")
+        self.eat("PRINT")
+        self.eat("LPAREN")
+        if self.current_token[0] == "STRING":
+            self.eat("STRING")
+        else:
+            self.expressao()
+        self.eat("RPAREN")
+        self.eat("SEMICOLON")
+        self.code_generator.generate("print")
 
     def parametro(self):
         #self.eat(self.current_token[0])  # INT ou BOOL
@@ -292,19 +329,24 @@ class Parser:
 
     #Avalia expressões aritméticas e booleanas.
     def expressao(self):
-        expr_type = self.expressao_simples()
-        if self.current_token and self.current_token[0] in {"EQ", "NEQ", "GT", "LT", "GTE", "LTE"}:
+        left_type = self.expressao_simples()
+        
+        if self.current_token[0] in {"EQ", "NEQ", "GT", "LT", "GTE", "LTE"}:
             operator = self.current_token[0]
             self.eat(operator)
-            right_expr_type = self.expressao_simples()
+            right_temp = self.expressao_simples()
             
-            # Verificar se os tipos de ambos os lados da expressão são compatíveis
-            if expr_type != right_expr_type:
-                line, column = self.current_token[2], self.current_token[3]
-                self.semantic_analyzer.errors.append(f"Semantic error: Type mismatch in comparison at line {line}, column {column}")
+            # Verifique a compatibilidade dos tipos
+            if left_type != right_temp:
+                raise Exception("Erro semântico: tipos incompatíveis")
             
-            # return "BOOL"  # O resultado de comparações é sempre booleano
-        return expr_type
+            # Geração do código de comparação
+            result_temp = self.code_generator.new_temp()
+            self.code_generator.generate(f"{result_temp} = {left_type} {operator} {right_temp}")
+            return "BOOL", result_temp
+        
+        return left_type
+
 
     #Componentes da análise de expressões, lidando com operações e agrupamentos.
     def expressao_simples(self):
@@ -402,14 +444,6 @@ if __name__ == "__main__":
         try:
             parser.programa()
             print(f"Parsing of {test_file} completed successfully!")
-
-            # Adicione o trecho aqui:
-            if not parser.semantic_analyzer.errors:
-                print("\nThree-Address Code:")
-                parser.code_generator.print_code()
-            else:
-                print("Errors were found during semantic analysis. Three-Address Code not generated.")
-
         except SyntaxError as e:
             print(f"Syntax error in {test_file}: {e}")
         except Exception as e:
