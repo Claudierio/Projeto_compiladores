@@ -1,5 +1,9 @@
 from tabela_simbolos import SymbolTable
 
+class Colors:
+    RED = '\033[91m'
+    RESET = '\033[0m'
+
 class SemanticAnalyzer:
     def __init__(self, symbolTable): 
         self.symbolTable = symbolTable
@@ -28,6 +32,6 @@ class SemanticAnalyzer:
         if not self.errors:
             print("\nNo semantic errors found.")
         else:
-            print("\nSemantic Errors:")
+            print(f"\n{Colors.RED}Semantic Errors:{Colors.RESET}")
             for error in self.errors:
                 print(error)

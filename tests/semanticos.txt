@@ -1,0 +1,102 @@
+### 1. **Uso de variável não declarada**
+
+```c
+programa exemplo;
+int x;
+x = 10;
+
+int resultado;
+resultado = y;  // Erro semântico: 'y' não foi declarado.
+```
+
+### 2. **Uso de função não declarada**
+
+```c
+programa exemplo;
+int x;
+x = 10;
+
+int resultado;
+resultado = soma(5, 3);  // Erro semântico: função 'soma' não foi declarada antes de seu uso.
+```
+
+### 3. **Incompatibilidade de tipos em atribuições**
+
+```c
+programa exemplo;
+int x;
+bool y;
+x = 10;
+y = x;  // Erro semântico: não é permitido atribuir um 'int' a uma variável 'bool'.
+```
+
+### 4. **Incompatibilidade de tipos em operações**
+
+```c
+programa exemplo;
+int x;
+bool y;
+x = 10;
+y = True;
+
+x = x + y;  // Erro semântico: 'int' e 'bool' não podem ser somados.
+```
+
+### 5. **Número incorreto de parâmetros em chamada de função**
+
+```c
+programa exemplo;
+funcao int soma(int a, int b) {
+    retorno a + b;
+}
+
+int resultado;
+resultado = soma(5);  // Erro semântico: a função 'soma' espera 2 parâmetros, mas recebeu 1.
+```
+
+### 6. **Atribuição de função a variável de tipo diferente**
+
+```c
+programa exemplo;
+funcao int soma(int a, int b) {
+    retorno a + b;
+}
+
+int resultado;
+resultado = soma;  // Erro semântico: 'soma' é uma função e não pode ser atribuída diretamente a uma variável 'int'.
+```
+
+### 7. **Função chamada dentro de um procedimento**
+
+```c
+programa exemplo;
+procedimento minha_funcao(int x, bool flag) {
+    imprimir("Exemplo de chamada de procedimento");
+    retorno x;  // Erro semântico: 'retorno' não é permitido em um procedimento.
+}
+```
+
+
+### 8. **Variável usada antes de ser declarada**
+
+```c
+programa exemplo;
+x = 10;  // Erro semântico: 'x' não foi declarado antes de seu uso.
+
+int x;
+```
+
+### 9. **Tipo de retorno inconsistente em uma função**
+
+```c
+programa exemplo;
+funcao int soma(int a, int b) {
+    retorno "Texto";  // Erro semântico: a função 'soma' deve retornar um 'int', mas está retornando uma string.
+}
+```
+
+### Como usar esses testes?
+
+Para validar o analisador semântico, você pode passar esse código de exemplo para o analisador e esperar que ele detecte os erros semânticos corretos. Cada um desses exemplos foi projetado para acionar um erro semântico específico, permitindo verificar se o analisador está funcionando conforme o esperado.
+
+Se quiser ajustar ou expandir mais esses exemplos, posso ajudar a melhorar os testes!
