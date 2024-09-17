@@ -18,30 +18,33 @@ O analisador léxico é responsável por transformar o código fonte em uma sequ
 **Exemplo de Uso:**
 O arquivo inclui um bloco de código que lê arquivos de teste e imprime os tokens gerados.
 
----
-
 #### **2. Analisador Sintático (`analisador_sintatico.py`)**
 
-**Função:**
-O analisador sintático utiliza a sequência de tokens fornecida pelo analisador léxico para construir uma estrutura hierárquica que representa a gramática da linguagem. Ele verifica se o código está corretamente estruturado segundo as regras gramaticais.
+**Função:**  
+O analisador sintático utiliza a sequência de tokens fornecida pelo analisador léxico para construir uma estrutura hierárquica que representa a gramática da linguagem. Ele verifica se o código está corretamente estruturado segundo as regras gramaticais e gera relatórios de erros sintáticos. Além disso, o analisador interage com o analisador semântico e o gerador de código de três endereços.
 
 **Componentes Principais:**
 
 - **Classe `Parser`:**
-  - **Método `__init__`:** Inicializa o parser com o lexer e define o token atual.
-  - **Método `eat`:** Consome o token atual se ele corresponder ao tipo esperado, avançando para o próximo token.
-  - **Método `programa`:** Verifica a estrutura geral do programa, começando com a palavra-chave `programa` e terminando com um bloco de código.
-  - **Método `bloco`:** Processa o bloco de código, que pode conter comandos variados.
-  - **Método `comando`:** Decide o tipo de comando com base no token atual e chama o método apropriado (declarações, atribuições, chamadas, etc.).
-  - **Método `atribuicao_ou_chamada`:** Trata atribuições e chamadas de funções/procedimentos.
-  - **Método `declaracao_variavel`, `declaracao_procedimento`, `declaracao_funcao`, etc.:** Processa declarações específicas e seus componentes.
-  - **Método `expressao`:** Avalia expressões aritméticas e booleanas.
-  - **Método `fator`, `termo`, `expressao_simples`:** Componentes da análise de expressões, lidando com operações e agrupamentos.
+  - **Método `__init__`:** Inicializa o parser com o lexer, define o token atual, inicializa a tabela de símbolos, o analisador semântico e o gerador de código de três endereços.
+  - **Método `eat`:** Consome o token atual se ele corresponder ao tipo esperado, ou gera um erro de sintaxe, avançando para o próximo token.
+  - **Método `programa`:** Verifica a estrutura geral do programa, começando com a palavra-chave `PROGRAM`, verificando declarações e finalizando com a geração do código de três endereços.
+  - **Método `bloco`:** Processa um bloco de código delimitado, entrando e saindo de escopos de variáveis.
+  - **Método `comando`:** Identifica o comando atual e direciona para o método específico (declarações, atribuições, chamadas de função, laços, condicionais, etc.).
+  - **Método `atribuicao_ou_chamada`:** Lida com atribuições a variáveis e chamadas de procedimentos ou funções.
+  - **Método `declaracao_variavel`:** Processa declarações de variáveis, adicionando-as à tabela de símbolos e gerando o código de três endereços.
+  - **Método `declaracao_funcao`:** Processa declarações de funções, verifica parâmetros, e gera rótulos para o código de três endereços.
+  - **Método `declaracao_procedimento`:** Processa procedimentos de maneira similar às funções, mas sem retorno.
+  - **Método `expressao`:** Avalia expressões aritméticas e booleanas, verificando a consistência de tipos e gerando o código correspondente.
+  - **Métodos auxiliares:** `fator`, `termo`, `expressao_simples` — lidam com partes de expressões e operadores.
 
-**Exemplo de Uso:**
-O arquivo lê arquivos de teste, gera tokens, e então usa o parser para verificar a sintaxe. Erros de sintaxe são capturados e relatados.
+**Novidades:**
+- Integração com o **analisador semântico** para verificação de tipos e relatórios de erros semânticos.
+- Geração de **código de três endereços** em diversas operações, incluindo atribuições, declarações, condicionais e loops.
+- Tratamento de **funções e procedimentos**, com verificação de escopo e compatibilidade de tipos.
 
----
+**Exemplo de Uso:**  
+O arquivo lê um código-fonte, gera tokens via o lexer, e então utiliza o parser para analisar a sintaxe. Erros são reportados, tanto de sintaxe quanto semânticos, e o código de três endereços é gerado e exibido.
 
 #### **3. Analisador Semântico (`analisador_semantico.py`)**
 
